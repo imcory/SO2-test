@@ -17,6 +17,7 @@ import datetime as dt
 import fujipy
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+#import numpy as np
 import csv
 
 MFC_one = fujipy.MFC(0x34)
@@ -60,7 +61,7 @@ def plotnstore():
                         flow.clear()
                         time.clear()
         else:
-            with open('example.csv', 'a', newline='') as outfile:
+            with open('test.csv', 'a', newline='') as outfile:
                     writer = csv.writer(outfile)
                     rows = zip(time,flow)
                     for row in rows:

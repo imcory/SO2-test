@@ -77,6 +77,21 @@ class iq(object):
         returned_data = reply[8:length]
         print(returned_data)
         
+    def stream_data(self):
+        """ streaming protocol"""
+        s2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s2.connect(('192.168.1.200',9881))
+        while True:
+            data = s2.recv(1048)
+            data.decode()
+            time = data[0:19]
+            concentration = data[20:28]
+            row = zip(time,concentration)
+            with open('some.csv', 'a', newline = '' ) as outfile:
+                writer= csv.writer(outfile)
+                writer.writerow(row)
+                
+        
         
     #needs to be tested to understand how the data gets entered
 #    def write_multiple(start_adress, quantity, write_values ):
@@ -90,20 +105,8 @@ class iq(object):
     
    
 
-""" streaming protocol"""
 
-s2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s2.connect(('192.168.1.200',9881))
-while True:
-    data = s2.recv(1048)
-    data.decode()
-    time = data[0:19]
-    concentration = data[20:28]
-    row = zip(time,concentration)
-    with open('some.csv', 'a', newline = '' ) as outfile:
-        writer= csv.writer(outfile)
-        writer.writerow(row)
-        
+
         
         
         
