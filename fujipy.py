@@ -44,7 +44,10 @@ quick notes
 """
 
 import serial
-import time
+import csv
+import datetime as dt
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 
 class MFC(object):
     
@@ -136,7 +139,6 @@ class MFC(object):
 #                        0x03, 0x01, 0x01, new_MacID, 0x00]
 #        final_command = self._cmd_construct(command_list)
 #        self._send_command(final_command)
-#        time.sleep(.1)
 #        self._receive_int()
         
     def serial_number(self):
@@ -299,11 +301,54 @@ class MFC(object):
     @staticmethod
     def close_serial():
         MFC.ser.close()
-        print(MFC.ser.is_open)
+        print(MFC.ser)
+        
+        """plotting and logging"""          
+  
+    def plotnstore(self):
+        fig = plt.figure(1, figsize=(10, 6), frameon=False, dpi=100)
+        ax = fig.add_subplot(1,1,1)
+        
+        flow_lst = []
+        time_lst = []
+        
+        outfile = open('test.csv', 'a', newline='')
+        writer = csv.writer(outfile)
+        #animation calls this function to continously update and format the plot    
+        def animate(i, flow_lst, time_lst, outfile ,writer):
+            
+            if MFC.ser.is_open:
+                
+                flow = self.indicated_flow() 
+                times = dt.datetime.now().strftime('%H:%M:%S.%f')
+                writer.writerow([times, flow])
+                outfile.flush()
+                
+                flow_lst.append(flow)
+                time_lst.append(times)
+                
+                #max amount to display on plot
+                time_lst = time_lst[-40:]
+                flow_lst = flow_lst[-40:]
+                
+                ax.clear()
+                ax.plot(time_lst, flow_lst)
+                
+                #plot format
+                plt.xticks(rotation=45, ha='right')
+                plt.subplots_adjust(bottom=0.30)
+                plt.title('Flowrate vs Time')
+                plt.ylabel('Flowrate')
+                         
+        ani = animation.FuncAnimation(fig , animate , fargs=(time_lst, flow_lst, outfile, writer), interval=0)
+        return ani
+        plt.show()
+        
+        
+        
 
+        
 
-
-    
     
     
     
