@@ -85,7 +85,7 @@ class MFC(object):
     """
     
     ser = serial.Serial()
-    ser.port = 'COM5'  #Needs to be changed depending on port being used
+    ser.port = 'COM4'  #Needs to be changed depending on port being used
     ser.baudrate = 38400
     ser.timeout = 1
     ser.close()
@@ -160,8 +160,10 @@ class MFC(object):
                         0x66, 0x01, 0x02, 0x00]
         final_command = self._cmd_construct(command_list)
         self._send_command(final_command)
-        self._receive_int()
-    
+        reply = self._receive_int()
+        print(reply)
+        
+        
     def flow_units(self):
         command_list = [self.MacID , 0x02, 0x80, 0x03,
                         0x66, 0x01, 0x03, 0x00]
@@ -174,7 +176,8 @@ class MFC(object):
                         0x69, 0x01, 0x05, 0x00]
         final_command = self._cmd_construct(command_list)
         self._send_command(final_command)
-        self._receive_int()
+        reply = self._receive_int()
+        print(reply)
            
     def setpoint(self, target_flow): #fix note self.full scale range causes this problem
         
@@ -195,21 +198,24 @@ class MFC(object):
         print(command_list)
         final_command = self._cmd_construct(command_list)
         self._send_command(final_command)
-        self._receive_int()
+        reply = self._receive_int()
+        print(reply)
     
     def read_setpoint(self):
         command_list = [self.MacID, 0x02, 0x80, 0x03,
                         0x69, 0x01, 0xA4, 0x00]
         final_command = self._cmd_construct(command_list)
         self._send_command(final_command)
-        self._receive_int()
+        reply = self._receive_int()
+        print(reply)
         
     def filtered_setpoint(self):
         command_list = [self.MacID, 0x02, 0x80, 0x03,
                         0x6A, 0x01, 0xA6, 0x00]
         final_command = self._cmd_construct(command_list)
         self._send_command(final_command)
-        self._receive_int()
+        reply = self._receive_int()
+        print(reply)
     
     def indicated_flow(self): 
         command_list = [self.MacID, 0x02, 0x80, 0x03,
@@ -252,7 +258,6 @@ class MFC(object):
             #removes all unnecsary value by slicing everything but returned
             # data from the recieved byte array                              
             returned_data = recieved[8:9+int(data_length)-4]
-            returned_data.decode()
             print(returned_data)
         except IndexError:
             print("INDEX ERROR: No message was recieved."
@@ -279,7 +284,7 @@ class MFC(object):
                 #4th value in returned byte array is data sequence lenght
                 #if value is 4 then thier is 1 byte of data as the value of 3
                 #is the defualt and taken up by the commands address
-                data_length =int(recieved[4])
+                data_length = int(recieved[4])
                 if data_length > 1:
                     returned_data = recieved[8:9+int(data_length)-4]
                     final = int.from_bytes(returned_data,
@@ -306,6 +311,7 @@ class MFC(object):
         """plotting and logging"""          
   
     def plotnstore(self):
+        #can only be called from console and not another script why???
         fig = plt.figure(1, figsize=(10, 6), frameon=False, dpi=100)
         ax = fig.add_subplot(1,1,1)
         
@@ -316,7 +322,7 @@ class MFC(object):
         writer = csv.writer(outfile)
         #animation calls this function to continously update and format the plot    
         def animate(i, flow_lst, time_lst, outfile ,writer):
-            
+
             if MFC.ser.is_open:
                 
                 flow = self.indicated_flow() 
@@ -341,6 +347,7 @@ class MFC(object):
                 plt.ylabel('Flowrate')
                          
         ani = animation.FuncAnimation(fig , animate , fargs=(time_lst, flow_lst, outfile, writer), interval=0)
+        #code stops here if not being called from console why???
         return ani
         plt.show()
         
